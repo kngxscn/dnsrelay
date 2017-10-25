@@ -5,15 +5,15 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Unit test for simple dnsrelayServer.
+ * Unit test for simple DNSRelayServer.
  */
-public class dnsrelayServerTest extends TestCase {
+public class DNSRelayServerTest extends TestCase {
     /**
      * Create the test case
      *
      * @param testName name of the test case
      */
-    public dnsrelayServerTest(String testName ) {
+    public DNSRelayServerTest(String testName ) {
         super( testName );
     }
 
@@ -21,7 +21,7 @@ public class dnsrelayServerTest extends TestCase {
      * @return the suite of tests being tested
      */
     public static Test suite() {
-        return new TestSuite( dnsrelayServerTest.class );
+        return new TestSuite( DNSRelayServerTest.class );
     }
 
     /**

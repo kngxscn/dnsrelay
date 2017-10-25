@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class dnsrelayServer {
+public class DNSRelayServer {
     public static void main( String[] args ) throws IOException{
         if (args.length < 1) {
             System.out.println("请输入本地域名-IP映射文件的路径");
@@ -35,6 +35,8 @@ public class dnsrelayServer {
         DatagramSocket socket = new DatagramSocket(53);
         byte[] data = new byte[1024];
         DatagramPacket packet = new DatagramPacket(data, data.length);
+
+        // 接受DNS查询请求，处理请求，返回结果
         while (true) {
             socket.receive(packet);
 
