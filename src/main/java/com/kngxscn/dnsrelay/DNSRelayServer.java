@@ -9,6 +9,8 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class DNSRelayServer {
@@ -62,17 +64,14 @@ public class DNSRelayServer {
         byte[] data = new byte[1024];
         DatagramPacket packet = new DatagramPacket(data, data.length);
 
-        int num = 0;
+        ExecutorService servicePool = Executors.newFixedThreadPool(10);  // 容纳10个线程的线程池
         while (true) {
             try {
                 socket.receive(packet);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            QueryParser queryParser = new QueryParser(packet);
-            queryParser.setName("Thread " + num++);
-            System.out.println(queryParser.getName()+"开始");
-            queryParser.start();
+            servicePool.execute(new QueryParser(packet));
         }
     }
 }

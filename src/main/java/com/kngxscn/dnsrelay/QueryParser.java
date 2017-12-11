@@ -3,7 +3,7 @@ package com.kngxscn.dnsrelay;
 import java.io.IOException;
 import java.net.*;
 
-public class QueryParser extends Thread {
+public class QueryParser implements Runnable {
     private byte[] data;
     private int dataLength;
     private InetAddress clientAddress;
@@ -17,7 +17,6 @@ public class QueryParser extends Thread {
         clientPort = packet.getPort();
     }
 
-    @Override
     public void run() {
         int offset = 0;
         byte[] buff_2 = new byte[2];
@@ -81,15 +80,15 @@ public class QueryParser extends Thread {
                 offset += 2;
                 dnsQuestion.setQclass(Utils.byteArrayToShort(buff_2));
             } else {
-                System.out.println(this.getName() + " DNS数据长度不匹配，Malformed Packet");
+                System.out.println(Thread.currentThread().getName() + " DNS数据长度不匹配，Malformed Packet");
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println(this.getName() + " Malformed Packet");
+            System.out.println(Thread.currentThread().getName() + " Malformed Packet");
         }
 
         // 查询本地域名-IP映射
         String ip = DNSRelayServer.getDomainIpMap().getOrDefault(dnsQuestion.getQname(), "");
-        System.out.println(this.getName() + " 本地查找结果 domain:" + dnsQuestion.getQname() + " QTYPE:" + dnsQuestion.getQtype() + " ip:" + ip);
+        System.out.println(Thread.currentThread().getName() + " 本地查找结果 domain:" + dnsQuestion.getQname() + " QTYPE:" + dnsQuestion.getQtype() + " ip:" + ip);
 
         if (!ip.equals("") && dnsQuestion.getQtype() == 1) { // 在本地域名-IP映射文件中找到结果且查询类型为A(Host Address)，构造回答的数据包
             // Header
@@ -129,19 +128,19 @@ public class QueryParser extends Thread {
             for (int i = 0; i < nsDNSRRByteArray.length; i++) {
                 response_data[responseOffset++] = nsDNSRRByteArray[i];
             }
-            System.out.println(this.getName() + " 响应数据：" +Utils.byteArrayToHexString(anDNSRRByteArray));
+            System.out.println(Thread.currentThread().getName() + " 响应数据：" +Utils.byteArrayToHexString(anDNSRRByteArray));
             // 回复响应数据包
             DatagramPacket responsePacket = new DatagramPacket(response_data, response_data.length, clientAddress, clientPort);
             synchronized (DNSRelayServer.lockObj) {
                 try {
-                    System.out.println(this.getName() + "获得socket，响应" + dnsQuestion.getQname() + ":" + ip);
+                    System.out.println(Thread.currentThread().getName() + "获得socket，响应" + dnsQuestion.getQname() + ":" + ip);
                     DNSRelayServer.getSocket().send(responsePacket);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         } else { // 本地未检索到，请求因特网DNS服务器
-            System.out.println(this.getName() + " 请求因特网DNS服务器");
+            System.out.println(Thread.currentThread().getName() + " 请求因特网DNS服务器");
             try {
                 InetAddress dnsServerAddress = InetAddress.getByName("114.114.114.114");
                 DatagramPacket internetSendPacket = new DatagramPacket(data, dataLength, dnsServerAddress, 53);
@@ -156,7 +155,7 @@ public class QueryParser extends Thread {
                 internetSocket.close();
                 synchronized (DNSRelayServer.lockObj) {
                     try {
-                        System.out.println(this.getName() + " 获得socket，响应" + dnsQuestion.getQname());
+                        System.out.println(Thread.currentThread().getName() + " 获得socket，响应" + dnsQuestion.getQname());
                         DNSRelayServer.getSocket().send(responsePacket);
                     } catch (IOException e) {
                         e.printStackTrace();
